@@ -2,7 +2,9 @@ package pro.zackpollard.telegrambot.grouptagbot.data;
 
 import lombok.Data;
 import pro.zackpollard.telegrambot.api.TelegramBot;
+import pro.zackpollard.telegrambot.api.chat.ChatMemberStatus;
 import pro.zackpollard.telegrambot.api.chat.ChatType;
+import pro.zackpollard.telegrambot.api.chat.GroupChat;
 import pro.zackpollard.telegrambot.api.chat.message.content.type.MessageEntity;
 import pro.zackpollard.telegrambot.api.chat.message.content.type.MessageEntityType;
 import pro.zackpollard.telegrambot.api.chat.message.send.ParseMode;
@@ -56,6 +58,8 @@ public class Group implements Listener {
 
         if(event.getMessage().getSender() != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
 
+            GroupChat chat = (GroupChat) event.getChat();
+
             String text = event.getContent().getContent();
 
             if (text.startsWith("@")) {
@@ -71,18 +75,25 @@ public class Group implements Listener {
 
                     if (tagText.equals("everyone")) {
 
-                        String message = "";
+                        if(hasPermission(event.getMessage().getSender(), chat, Role.ADMIN)) {
 
-                        for (long userID : this.getUserIDs()) {
+                            String message = "";
 
-                            String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
-                            if(username != null) {
-                                message += "@" + username + " ";
+                            for (long userID : this.getUserIDs()) {
+
+                                String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
+                                if (username != null) {
+                                    message += "@" + username + " ";
+                                }
                             }
-                        }
 
-                        event.getChat().sendMessage(message);
-                        return;
+                            event.getChat().sendMessage(message);
+                            return;
+                        } else {
+
+                            event.getChat().sendMessage(SendableTextMessage.builder().message("You must only specify one tag.").replyTo(event.getMessage()).build());
+                            return;
+                        }
                     }
 
                     Tag tag = tags.get(tagText);
@@ -133,156 +144,167 @@ public class Group implements Listener {
 
         if(event.getMessage().getSender() != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
 
+            GroupChat chat = (GroupChat) event.getChat();
+
             switch (event.getCommand().toLowerCase()) {
 
                 case "create": {
 
-                    if (event.getArgs().length == 1) {
+                    if(hasPermission(event.getMessage().getSender(), chat, Role.FAKE_ADMIN)) {
 
-                        String tagText = event.getArgs()[0].toLowerCase();
+                        if (event.getArgs().length == 1) {
 
-                        if (tagText.length() != 0) {
+                            String tagText = event.getArgs()[0].toLowerCase();
 
-                            if (this.getTags().containsKey(tagText)) {
+                            if (tagText.length() != 0) {
 
-                                event.getChat().sendMessage(SendableTextMessage.builder().message("A tag with this name already exists.").replyTo(event.getMessage()).build());
-                                return;
+                                if (this.getTags().containsKey(tagText)) {
+
+                                    event.getChat().sendMessage(SendableTextMessage.builder().message("A tag with this name already exists.").replyTo(event.getMessage()).build());
+                                    return;
+                                } else {
+
+                                    this.getTags().put(tagText, new Tag(tagText));
+                                    event.getChat().sendMessage(SendableTextMessage.builder().message("This tag has been created, use /add (tagname) (username/userID) to add people.").replyTo(event.getMessage()).build());
+                                    return;
+                                }
                             } else {
 
-                                this.getTags().put(tagText, new Tag(tagText));
-                                event.getChat().sendMessage(SendableTextMessage.builder().message("This tag has been created, use /add (tagname) (username/userID) to add people.").replyTo(event.getMessage()).build());
+                                event.getChat().sendMessage(SendableTextMessage.builder().message("You must specify a tag longer than zero characters.").replyTo(event.getMessage()).build());
                                 return;
                             }
                         } else {
 
-                            event.getChat().sendMessage(SendableTextMessage.builder().message("You must specify a tag longer than zero characters.").replyTo(event.getMessage()).build());
+                            event.getChat().sendMessage(SendableTextMessage.builder().message("You must only specify one tag.").replyTo(event.getMessage()).build());
                             return;
                         }
-                    } else {
-
-                        event.getChat().sendMessage(SendableTextMessage.builder().message("You must only specify one tag.").replyTo(event.getMessage()).build());
-                        return;
                     }
                 }
 
                 case "delete": {
 
-                    if(event.getArgs().length == 1) {
+                    if(hasPermission(event.getMessage().getSender(), chat, Role.FAKE_ADMIN)) {
 
-                        String tagText = event.getArgs()[0].toLowerCase();
+                        if (event.getArgs().length == 1) {
 
-                        if(tagText.length() != 0) {
+                            String tagText = event.getArgs()[0].toLowerCase();
 
-                            if(this.getTags().remove(tagText) != null) {
+                            if (tagText.length() != 0) {
 
-                                event.getChat().sendMessage(SendableTextMessage.builder().message("The tag '" + tagText + "' has been successfully removed.").replyTo(event.getMessage()).build());
-                                return;
+                                if (this.getTags().remove(tagText) != null) {
+
+                                    event.getChat().sendMessage(SendableTextMessage.builder().message("The tag '" + tagText + "' has been successfully removed.").replyTo(event.getMessage()).build());
+                                    return;
+                                } else {
+
+                                    event.getChat().sendMessage(SendableTextMessage.builder().message("A tag with name '" + tagText + "' doesn't exist.").replyTo(event.getMessage()).build());
+                                    return;
+                                }
                             } else {
 
-                                event.getChat().sendMessage(SendableTextMessage.builder().message("A tag with name '" + tagText + "' doesn't exist.").replyTo(event.getMessage()).build());
+                                event.getChat().sendMessage(SendableTextMessage.builder().message("You must specify a tag longer than zero characters.").replyTo(event.getMessage()).build());
                                 return;
                             }
                         } else {
 
-                            event.getChat().sendMessage(SendableTextMessage.builder().message("You must specify a tag longer than zero characters.").replyTo(event.getMessage()).build());
+                            event.getChat().sendMessage(SendableTextMessage.builder().message("You must only specify one tag.").replyTo(event.getMessage()).build());
                             return;
                         }
-                    } else {
-
-                        event.getChat().sendMessage(SendableTextMessage.builder().message("You must only specify one tag.").replyTo(event.getMessage()).build());
-                        return;
                     }
                 }
 
                 case "remove":
                 case "add": {
 
-                    boolean commandAdd = event.getCommand().toLowerCase().equals("add");
+                    if(hasPermission(event.getMessage().getSender(), chat, Role.FAKE_ADMIN)) {
 
-                    if (event.getArgs().length >= 1) {
+                        boolean commandAdd = event.getCommand().toLowerCase().equals("add");
 
-                        String tagText = event.getArgs()[0].toLowerCase();
+                        if (event.getArgs().length >= 1) {
 
-                        Tag tag = this.getTags().get(tagText);
+                            String tagText = event.getArgs()[0].toLowerCase();
 
-                        if (tag != null) {
+                            Tag tag = this.getTags().get(tagText);
 
-                            Map<String, Long> usernameMap = this.getUsernamesInChat();
+                            if (tag != null) {
 
-                            int usersModified = 0;
+                                Map<String, Long> usernameMap = this.getUsernamesInChat();
 
-                            for (MessageEntity entity : event.getContent().getEntities()) {
+                                int usersModified = 0;
 
-                                if (entity.getType().equals(MessageEntityType.TEXT_MENTION)) {
+                                for (MessageEntity entity : event.getContent().getEntities()) {
 
-                                    User user = entity.getUser();
+                                    if (entity.getType().equals(MessageEntityType.TEXT_MENTION)) {
 
-                                    if (user.getUsername() != null) {
+                                        User user = entity.getUser();
 
-                                        if(tag.getUsers().contains(user.getId()) != commandAdd) {
+                                        if (user.getUsername() != null) {
 
-                                            if(commandAdd) {
+                                            if (tag.getUsers().contains(user.getId()) != commandAdd) {
 
-                                                tag.getUsers().add(user.getId());
+                                                if (commandAdd) {
+
+                                                    tag.getUsers().add(user.getId());
+                                                } else {
+
+                                                    tag.getUsers().remove(user.getId());
+                                                }
                                             } else {
 
-                                                tag.getUsers().remove(user.getId());
+                                                event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + user.getFullName() + "' is " + (commandAdd ? "already in" : "not in") + " this tag so they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
                                             }
+                                            instance.getManager().getUsernameCache().updateUsername(user.getId(), user.getUsername());
+                                            ++usersModified;
                                         } else {
 
-                                            event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + user.getFullName() + "' is " + (commandAdd ? "already in" : "not in") + " this tag so they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
+                                            event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + user.getFullName() + "' doesn't have a username and so can't be pinged, they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
                                         }
-                                        instance.getManager().getUsernameCache().updateUsername(user.getId(), user.getUsername());
-                                        ++usersModified;
-                                    } else {
+                                    } else if (entity.getType().equals(MessageEntityType.MENTION)) {
 
-                                        event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + user.getFullName() + "' doesn't have a username and so can't be pinged, they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
-                                    }
-                                } else if (entity.getType().equals(MessageEntityType.MENTION)) {
+                                        String mention = event.getContent().getContent().substring(entity.getOffset() + 1, entity.getOffset() + entity.getLength()).toLowerCase();
 
-                                    String mention = event.getContent().getContent().substring(entity.getOffset() + 1, entity.getOffset() + entity.getLength()).toLowerCase();
+                                        System.out.println(mention);
 
-                                    System.out.println(mention);
+                                        Long userID = usernameMap.get(mention);
 
-                                    Long userID = usernameMap.get(mention);
+                                        if (userID != null) {
 
-                                    if (userID != null) {
+                                            if (tag.getUsers().contains(userID) != commandAdd) {
 
-                                        if(tag.getUsers().contains(userID) != commandAdd) {
+                                                if (commandAdd) {
 
-                                            if(commandAdd) {
+                                                    tag.getUsers().add(userID);
+                                                } else {
 
-                                                tag.getUsers().add(userID);
+                                                    tag.getUsers().remove(userID);
+                                                }
                                             } else {
 
-                                                tag.getUsers().remove(userID);
+                                                event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + mention + "' is " + (commandAdd ? "already in" : "not in") + " this tag so they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
                                             }
+                                            instance.getManager().getUsernameCache().updateUsername(userID, mention);
+                                            ++usersModified;
                                         } else {
 
-                                            event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + mention + "' is " + (commandAdd ? "already in" : "not in") + " this tag so they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
+                                            event.getChat().sendMessage(SendableTextMessage.builder().message("The username + @" + mention + " is not known, they will not be " + (commandAdd ? "added to" : "removed from") + " the tag. The user may not have spoken since the bot was added, or may not be in this chat.").replyTo(event.getMessage()).build());
                                         }
-                                        instance.getManager().getUsernameCache().updateUsername(userID, mention);
-                                        ++usersModified;
-                                    } else {
-
-                                        event.getChat().sendMessage(SendableTextMessage.builder().message("The username + @" + mention + " is not known, they will not be " + (commandAdd ? "added to" : "removed from") + " the tag. The user may not have spoken since the bot was added, or may not be in this chat.").replyTo(event.getMessage()).build());
                                     }
                                 }
-                            }
 
-                            event.getChat().sendMessage(SendableTextMessage.builder().message(usersModified + " users were successfully added to the tag.").replyTo(event.getMessage()).build());
+                                event.getChat().sendMessage(SendableTextMessage.builder().message(usersModified + " users were successfully added to the tag.").replyTo(event.getMessage()).build());
+                            } else {
+
+                                event.getChat().sendMessage(SendableTextMessage.builder().message("This tag has not been created, use `/create " + tagText + "` to create it.").parseMode(ParseMode.MARKDOWN).replyTo(event.getMessage()).build());
+                                return;
+                            }
                         } else {
 
-                            event.getChat().sendMessage(SendableTextMessage.builder().message("This tag has not been created, use `/create " + tagText + "` to create it.").parseMode(ParseMode.MARKDOWN).replyTo(event.getMessage()).build());
+                            event.getChat().sendMessage(SendableTextMessage.builder().message("You must specify two arguments, the tag you want to add to and then the user you are adding by mentioning them").replyTo(event.getMessage()).build());
                             return;
                         }
-                    } else {
 
-                        event.getChat().sendMessage(SendableTextMessage.builder().message("You must specify two arguments, the tag you want to add to and then the user you are adding by mentioning them").replyTo(event.getMessage()).build());
-                        return;
+                        break;
                     }
-
-                    break;
                 }
 
                 case "tags": {
@@ -333,16 +355,30 @@ public class Group implements Listener {
                         return;
                     }
                 }
-
-                default: {
-
-                    event.getChat().sendMessage(SendableTextMessage.builder().message("This is not a valid command, please check the telegram command list for the available commands.").replyTo(event.getMessage()).build());
-                    break;
-                }
             }
         }
     }
 
+    public boolean hasPermission(User user, GroupChat chat, Role requiredRole) {
+
+        switch(requiredRole) {
+
+            case NONE:
+
+                return true;
+            case FAKE_ADMIN:
+
+                return !this.isOnlyAdmins();
+            case ADMIN:
+
+                ChatMemberStatus status = chat.getChatMember(user).getStatus();
+
+                return (status.equals(ChatMemberStatus.ADMINISTRATOR) || status.equals(ChatMemberStatus.CREATOR));
+            default:
+
+                return false;
+        }
+    }
 
     public Map<String, Long> getUsernamesInChat() {
 
@@ -359,5 +395,12 @@ public class Group implements Listener {
         }
 
         return userMap;
+    }
+
+    private enum Role {
+
+        NONE,
+        FAKE_ADMIN,
+        ADMIN
     }
 }
