@@ -317,6 +317,7 @@ public class Group implements Listener {
                     }
 
                     event.getChat().sendMessage(SendableTextMessage.builder().message(message).replyTo(event.getMessage()).build());
+                    break;
                 }
 
                 case "info": {
@@ -344,6 +345,7 @@ public class Group implements Listener {
                             }
 
                             event.getChat().sendMessage(SendableTextMessage.builder().message(message).replyTo(event.getMessage()).build());
+                            return;
                         } else {
 
                             event.getChat().sendMessage(SendableTextMessage.builder().message("This tag has not been created, use `/create " + tagText + "` to create it.").parseMode(ParseMode.MARKDOWN).replyTo(event.getMessage()).build());
