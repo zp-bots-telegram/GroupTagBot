@@ -1,8 +1,7 @@
-package pro.zackpollard.telegrambot.grouptagbot;
+package pro.zackpollard.telegrambot.grouptagbot.data;
 
 import lombok.Data;
 import pro.zackpollard.telegrambot.api.TelegramBot;
-import pro.zackpollard.telegrambot.api.chat.Chat;
 import pro.zackpollard.telegrambot.api.chat.ChatType;
 import pro.zackpollard.telegrambot.api.chat.message.content.type.MessageEntity;
 import pro.zackpollard.telegrambot.api.chat.message.content.type.MessageEntityType;
@@ -14,7 +13,7 @@ import pro.zackpollard.telegrambot.api.event.chat.message.MessageEditReceivedEve
 import pro.zackpollard.telegrambot.api.event.chat.message.MessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.TextMessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.user.User;
-import pro.zackpollard.telegrambot.grouptagbot.data.Tag;
+import pro.zackpollard.telegrambot.grouptagbot.GroupTagBot;
 
 import java.util.HashMap;
 import java.util.Map;

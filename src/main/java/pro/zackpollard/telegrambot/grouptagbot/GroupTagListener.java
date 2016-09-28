@@ -7,6 +7,7 @@ import pro.zackpollard.telegrambot.api.event.chat.ParticipantJoinGroupChatEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.MessageEditReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.MessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.user.User;
+import pro.zackpollard.telegrambot.grouptagbot.data.Group;
 
 /**
  * @author Zack Pollard
