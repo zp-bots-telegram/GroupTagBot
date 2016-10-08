@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import lombok.Getter;
 import pro.zackpollard.telegrambot.api.TelegramBot;
 
-import java.io.*;
+import java.util.Scanner;
 
 /**
  * @author Zack Pollard
@@ -46,6 +46,33 @@ public class GroupTagBot {
         //The boolean it accepts is to specify whether to retrieve messages
         //which were sent before the bot was started but after the bot was last turned off.
         telegramBot.startUpdates(false);
+
+        Scanner scanner = new Scanner(System.in);
+
+        boolean running = true;
+
+        while(running) {
+
+            System.out.print("root@GroupTagBot$ ");
+            String input = scanner.nextLine();
+
+            switch(input) {
+
+                case "exit":
+                case "shutdown": {
+                    System.out.println("Saving and exiting safely...");
+                    manager.saveUsernameCache();
+                    System.out.println("Saving username cache...");
+                    manager.saveTags();
+                    System.out.println("Saving tags...");
+                    running = false;
+                    break;
+                }
+            }
+        }
+
+        scanner.close();
+        System.exit(0);
     }
 
     public static Gson getGson() {
