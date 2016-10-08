@@ -59,7 +59,7 @@ public class GroupTagListener implements Listener {
 
             if(event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) {
 
-                manager.getGroupTags().getGroups().put(Long.valueOf(event.getChat().getId()), new Group(Long.valueOf(event.getChat().getId())));
+                manager.getGroupTags().getGroups().putIfAbsent(Long.valueOf(event.getChat().getId()), new Group(Long.valueOf(event.getChat().getId())));
             }
         } else {
 
