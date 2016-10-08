@@ -54,7 +54,7 @@ public class GroupTagBot {
         while(running) {
 
             System.out.print("root@GroupTagBot$ ");
-            String input = scanner.nextLine();
+            String input = scanner.nextLine().trim();
 
             switch(input) {
 
@@ -66,6 +66,17 @@ public class GroupTagBot {
                     manager.saveTags();
                     System.out.println("Saving tags...");
                     running = false;
+                    break;
+                }
+                case "stats": {
+
+                    System.out.println("Total cached users: " + manager.getUsernameCache().getUsernameCache().size());
+                    System.out.println("Total groups: " + manager.getGroupTags().getGroups().size());
+                }
+                default: {
+
+                    int spaceChar = input.indexOf(" ");
+                    System.out.println("-console: " + (spaceChar != -1 ? input.substring(spaceChar) : input) + ": command not found");
                     break;
                 }
             }
