@@ -1,5 +1,10 @@
 package pro.zackpollard.telegrambot.grouptagbot.data;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import lombok.Data;
 import pro.zackpollard.telegrambot.api.TelegramBot;
 import pro.zackpollard.telegrambot.api.chat.ChatMemberStatus;
@@ -16,11 +21,6 @@ import pro.zackpollard.telegrambot.api.event.chat.message.MessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.TextMessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.user.User;
 import pro.zackpollard.telegrambot.grouptagbot.GroupTagBot;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author Zack Pollard
@@ -291,7 +291,7 @@ public class Group implements Listener {
                                     }
                                 }
 
-                                event.getChat().sendMessage(SendableTextMessage.builder().message(usersModified + " users were successfully added to the tag.").replyTo(event.getMessage()).build());
+                                event.getChat().sendMessage(SendableTextMessage.builder().message(usersModified + " users were successfully "  + (commandAdd ? "added to" : "removed from") + " the tag.").replyTo(event.getMessage()).build());
                             } else {
 
                                 event.getChat().sendMessage(SendableTextMessage.builder().message("This tag has not been created, use `/create " + tagText + "` to create it.").parseMode(ParseMode.MARKDOWN).replyTo(event.getMessage()).build());

@@ -26,7 +26,7 @@ public class Utils {
             System.err.println("The file could not be saved as the file couldn't be found on the storage device. Please check the directories read/write permissions and contact the developer!");
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("The file could not be written to as an error occured. Please check the directories read/write permissions and contact the developer!");
+            System.err.println("The file could not be written to as an error occurred. Please check the directories read/write permissions and contact the developer!");
         }
 
         return false;
