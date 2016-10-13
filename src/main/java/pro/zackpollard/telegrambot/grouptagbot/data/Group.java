@@ -1,5 +1,10 @@
 package pro.zackpollard.telegrambot.grouptagbot.data;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import lombok.Data;
 import pro.zackpollard.telegrambot.api.TelegramBot;
 import pro.zackpollard.telegrambot.api.chat.ChatMemberStatus;
@@ -16,11 +21,6 @@ import pro.zackpollard.telegrambot.api.event.chat.message.MessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.TextMessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.user.User;
 import pro.zackpollard.telegrambot.grouptagbot.GroupTagBot;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author Zack Pollard
@@ -56,7 +56,8 @@ public class Group implements Listener {
     @Override
     public void onTextMessageReceived(TextMessageReceivedEvent event) {
 
-        if(event.getMessage().getSender() != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
+        User sender = event.getMessage().getSender();
+        if(sender != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
 
             GroupChat chat = (GroupChat) event.getChat();
 
@@ -81,10 +82,16 @@ public class Group implements Listener {
 
                             for (long userID : this.getUserIDs()) {
 
-                                String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
-                                if (username != null) {
-                                    message += "@" + username + " ";
+                                if (sender.getId() != userID) {
+                                    String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
+                                    if (username != null) {
+                                        message += "@" + username + " ";
+                                    }
                                 }
+                            }
+
+                            if (message.isEmpty()) {
+                                message = "There is nobody to tag!";
                             }
 
                             event.getChat().sendMessage(message);
@@ -104,10 +111,16 @@ public class Group implements Listener {
 
                         for (long userID : tag.getUsers()) {
 
-                            String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
-                            if(username != null) {
-                                message += "@" + username + " ";
+                            if (sender.getId() != userID) {
+                                String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
+                                if (username != null) {
+                                    message += "@" + username + " ";
+                                }
                             }
+                        }
+
+                        if (message.isEmpty()) {
+                            message = "There is nobody to tag!";
                         }
 
                         event.getChat().sendMessage(message);
