@@ -31,12 +31,11 @@ public class GroupTagListener implements Listener {
         User sender = event.getMessage().getSender();
 
         if(sender != null) {
-
-            manager.getUsernameCache().updateUsername(sender.getId(), sender.getUsername());
+            if (manager.getUsernameCache().updateUsername(sender.getId(), sender.getUsername())) {
+                instance.getManager().saveUsernameCache();
+                instance.getManager().saveTags();
+            }
         }
-
-        instance.getManager().saveUsernameCache();
-        instance.getManager().saveTags();
     }
 
     @Override

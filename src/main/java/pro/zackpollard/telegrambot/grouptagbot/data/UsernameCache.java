@@ -17,11 +17,14 @@ public class UsernameCache {
         this.usernameCache = new TreeMap<>();
     }
 
-    public void updateUsername(Long userID, String newUsername) {
+    // returns true if an update operation was performed
+    public boolean updateUsername(Long userID, String newUsername) {
 
         if(newUsername != null && !newUsername.equals("")) {
             if (newUsername.charAt(0) == '@') newUsername = newUsername.substring(1);
-            this.usernameCache.put(userID, newUsername.toLowerCase());
+            return this.usernameCache.put(userID, newUsername.toLowerCase()) != null;
         }
+
+        return false;
     }
 }
