@@ -295,6 +295,7 @@ public class Group implements Listener {
 
                                                 event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + mention + "' is " + (commandAdd ? "already in" : "not in") + " this tag so they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
                                             }
+
                                             instance.getManager().getUsernameCache().updateUsername(userID, mention);
                                             ++usersModified;
                                         } else {
@@ -304,7 +305,10 @@ public class Group implements Listener {
                                     }
                                 }
 
-                                event.getChat().sendMessage(SendableTextMessage.builder().message(usersModified + " users were successfully "  + (commandAdd ? "added to" : "removed from") + " the tag.").replyTo(event.getMessage()).build());
+                                if(usersModified != 0) {
+
+                                    event.getChat().sendMessage(SendableTextMessage.builder().message(usersModified + " users were successfully " + (commandAdd ? "added to" : "removed from") + " the tag.").replyTo(event.getMessage()).build());
+                                }
                             } else {
 
                                 event.getChat().sendMessage(SendableTextMessage.builder().message("This tag has not been created, use `/create " + tagText + "` to create it.").parseMode(ParseMode.MARKDOWN).replyTo(event.getMessage()).build());
