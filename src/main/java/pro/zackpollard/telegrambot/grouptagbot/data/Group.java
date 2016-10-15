@@ -1,10 +1,5 @@
 package pro.zackpollard.telegrambot.grouptagbot.data;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import lombok.Data;
 import pro.zackpollard.telegrambot.api.TelegramBot;
 import pro.zackpollard.telegrambot.api.chat.ChatMemberStatus;
@@ -21,6 +16,11 @@ import pro.zackpollard.telegrambot.api.event.chat.message.MessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.TextMessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.user.User;
 import pro.zackpollard.telegrambot.grouptagbot.GroupTagBot;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Zack Pollard
@@ -98,7 +98,7 @@ public class Group implements Listener {
                             return;
                         } else {
 
-                            event.getChat().sendMessage(SendableTextMessage.builder().message("You must only specify one tag.").replyTo(event.getMessage()).build());
+                            event.getChat().sendMessage(SendableTextMessage.builder().message("You don't have permission to use the @everyone tag.").replyTo(event.getMessage()).build());
                             return;
                         }
                     }
