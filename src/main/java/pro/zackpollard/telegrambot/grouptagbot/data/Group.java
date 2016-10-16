@@ -262,12 +262,12 @@ public class Group implements Listener {
 
                                                     tag.getUsers().remove(user.getId());
                                                 }
+                                                ++usersModified;
                                             } else {
 
                                                 event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + user.getFullName() + "' is " + (commandAdd ? "already in" : "not in") + " this tag so they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
                                             }
                                             instance.getManager().getUsernameCache().updateUsername(user.getId(), user.getUsername());
-                                            ++usersModified;
                                         } else {
 
                                             event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + user.getFullName() + "' doesn't have a username and so can't be pinged, they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
@@ -291,13 +291,13 @@ public class Group implements Listener {
 
                                                     tag.getUsers().remove(userID);
                                                 }
+                                                ++usersModified;
                                             } else {
 
                                                 event.getChat().sendMessage(SendableTextMessage.builder().message("The user '" + mention + "' is " + (commandAdd ? "already in" : "not in") + " this tag so they will not be " + (commandAdd ? "added to" : "removed from") + " the tag").replyTo(event.getMessage()).build());
                                             }
 
                                             instance.getManager().getUsernameCache().updateUsername(userID, mention);
-                                            ++usersModified;
                                         } else {
 
                                             event.getChat().sendMessage(SendableTextMessage.builder().message("The username + @" + mention + " is not known, they will not be " + (commandAdd ? "added to" : "removed from") + " the tag. The user may not have spoken since the bot was added, or may not be in this chat.").replyTo(event.getMessage()).build());
