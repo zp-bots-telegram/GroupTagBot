@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import lombok.Getter;
 import pro.zackpollard.telegrambot.api.TelegramBot;
 
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -72,6 +73,23 @@ public class GroupTagBot {
 
                     System.out.println("Total cached users: " + manager.getUsernameCache().getUsernameCache().size());
                     System.out.println("Total groups: " + manager.getGroupTags().getGroups().size());
+                    break;
+                }
+                case "cleanup": {
+
+                    int emptyUsernames = 0;
+
+                    for(Map.Entry<Long, String> entry : manager.getUsernameCache().getUsernameCache().entrySet()) {
+
+                        if(entry.getValue().equals("") || entry.getValue() == null) {
+
+                            ++emptyUsernames;
+                            manager.getUsernameCache().getUsernameCache().remove(entry.getKey());
+                        }
+                    }
+
+                    System.out.println("Usernames cleaned up: " + emptyUsernames);
+                    break;
                 }
                 default: {
 
