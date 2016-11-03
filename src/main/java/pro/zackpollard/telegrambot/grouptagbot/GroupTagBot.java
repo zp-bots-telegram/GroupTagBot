@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import lombok.Getter;
 import pro.zackpollard.telegrambot.api.TelegramBot;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 /**
  * @author Zack Pollard
@@ -79,13 +81,20 @@ public class GroupTagBot {
 
                     int emptyUsernames = 0;
 
+                    Set<Long> toCleanup = new HashSet<>();
+
                     for(Map.Entry<Long, String> entry : manager.getUsernameCache().getUsernameCache().entrySet()) {
 
                         if(entry.getValue().equals("") || entry.getValue() == null) {
 
                             ++emptyUsernames;
-                            manager.getUsernameCache().getUsernameCache().remove(entry.getKey());
+                            toCleanup.add(entry.getKey());
                         }
+                    }
+
+                    for(Long id : toCleanup) {
+
+                        manager.getUsernameCache().getUsernameCache().remove(id);
                     }
 
                     System.out.println("Usernames cleaned up: " + emptyUsernames);
