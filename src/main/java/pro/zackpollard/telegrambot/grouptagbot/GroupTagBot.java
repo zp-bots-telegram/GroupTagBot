@@ -3,11 +3,12 @@ package pro.zackpollard.telegrambot.grouptagbot;
 import com.google.gson.Gson;
 import lombok.Getter;
 import pro.zackpollard.telegrambot.api.TelegramBot;
+import pro.zackpollard.telegrambot.api.chat.ChatMemberStatus;
+import pro.zackpollard.telegrambot.api.chat.GroupChat;
+import pro.zackpollard.telegrambot.grouptagbot.data.Group;
+import pro.zackpollard.telegrambot.grouptagbot.data.Tag;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Zack Pollard
@@ -80,6 +81,7 @@ public class GroupTagBot {
                 case "cleanup": {
 
                     int emptyUsernames = 0;
+                    int usersRemoved = 0;
 
                     Set<Long> toCleanup = new HashSet<>();
 
@@ -92,12 +94,53 @@ public class GroupTagBot {
                         }
                     }
 
+                    for(Group group : manager.getGroupTags().getGroups().values()) {
+
+                        GroupChat chat = (GroupChat) telegramBot.getChat(group.getId());
+
+                        for(Tag tag : group.getTags().values()) {
+
+                            Iterator<Long> users = tag.getUsers().iterator();
+
+                            while(users.hasNext()) {
+
+                                long user = users.next();
+
+                                ChatMemberStatus chatMemberStatus;
+
+                                if(!group.getUserIDs().contains(user)) {
+
+                                    chatMemberStatus = ChatMemberStatus.LEFT;
+                                } else {
+
+                                    chatMemberStatus = chat.getChatMember(user).getStatus();
+                                }
+
+                                switch(chatMemberStatus) {
+
+                                    case KICKED:
+                                    case LEFT: {
+
+                                        tag.getUsers().remove(user);
+                                        if(group.getUserIDs().contains(user)) {
+
+                                            ++usersRemoved;
+                                            group.getUserIDs().remove(user);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     for(Long id : toCleanup) {
 
                         manager.getUsernameCache().getUsernameCache().remove(id);
                     }
 
                     System.out.println("Usernames cleaned up: " + emptyUsernames);
+                    System.out.println("Removed/Left Users cleaned up: " + usersRemoved);
                     break;
                 }
                 default: {
