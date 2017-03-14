@@ -19,7 +19,7 @@ public class UsernameCache {
 
     public void updateUsername(Long userID, String newUsername) {
 
-        if(newUsername != null && !newUsername.equals("")) {
+        if(newUsername != null && !newUsername.trim().equals("")) {
             if (newUsername.charAt(0) == '@') newUsername = newUsername.substring(1);
             this.usernameCache.put(userID, newUsername.toLowerCase());
         }
