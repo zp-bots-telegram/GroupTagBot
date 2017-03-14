@@ -374,6 +374,46 @@ public class Group implements Listener {
                         return;
                     }
                 }
+
+                case "edit": {
+
+                    if(hasPermission(event.getMessage().getSender(), chat, Role.FAKE_ADMIN)) {
+
+                        if (event.getArgs().length == 2) {
+
+                            String targetTag = event.getArgs()[0].toLowerCase();
+                            String newName = event.getArgs()[1].toLowerCase();
+
+                            Tag newTag = this.getTags().get(targetTag);
+
+                            if (newTag != null) {
+
+                                if (newName.length() != 0) {
+
+                                    if (this.getTags().containsKey(newName)) {
+
+                                        event.getChat().sendMessage(SendableTextMessage.builder().message("The new name you specified is already used.").replyTo(event.getMessage()).build());
+                                    } else {
+
+                                        this.getTags().put(newName, new Tag(newName));
+                                        event.getChat().sendMessage(SendableTextMessage.builder().message("This tag has been created, use /add (tagname) (username/userID) to add people.").replyTo(event.getMessage()).build());
+                                    }
+                                } else {
+
+                                    event.getChat().sendMessage(SendableTextMessage.builder().message("You must specify a tag longer than zero characters.").replyTo(event.getMessage()).build());
+                                }
+                            } else {
+
+                                event.getChat().sendMessage(SendableTextMessage.builder().replyTo(event.getMessage()).message("The new tag name you specified is already in use.").build());
+                            }
+                        } else {
+
+                            event.getChat().sendMessage(SendableTextMessage.builder().replyTo(event.getMessage()).message("Incorrect command syntax, you probably meant /edit oldTagName newTagName").build());
+                        }
+                    }
+
+                    break;
+                }
             }
         }
     }
