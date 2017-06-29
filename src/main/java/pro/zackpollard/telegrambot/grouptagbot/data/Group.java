@@ -33,6 +33,7 @@ public class Group implements Listener {
     private final Map<String, Tag> tags;
     private boolean onlyAdmins;
 
+    private final transient Map<String, Tag> aliases;
     private final transient TelegramBot telegramBot;
     private final transient GroupTagBot instance;
 
@@ -49,6 +50,7 @@ public class Group implements Listener {
 
         this.userIDs = new TreeSet<>();
         this.tags = new HashMap<>();
+        this.aliases = new HashMap<>();
 
         telegramBot.getEventsManager().register(this);
     }
@@ -395,8 +397,9 @@ public class Group implements Listener {
                                         event.getChat().sendMessage(SendableTextMessage.builder().message("The new name you specified is already used.").replyTo(event.getMessage()).build());
                                     } else {
 
-                                        this.getTags().put(newName, new Tag(newName));
-                                        event.getChat().sendMessage(SendableTextMessage.builder().message("This tag has been created, use /add (tagname) (username/userID) to add people.").replyTo(event.getMessage()).build());
+                                        this.getTags().put(newName, newTag);
+                                        this.getTags().remove(targetTag);
+                                        event.getChat().sendMessage(SendableTextMessage.builder().message("The tag has been renamed from @" + targetTag + " to @" + newName +".").replyTo(event.getMessage()).build());
                                     }
                                 } else {
 
