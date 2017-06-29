@@ -85,18 +85,20 @@ public class Group implements Listener {
 
                         if(hasPermission(event.getMessage().getSender(), chat, Role.ADMIN)) {
 
-                            String message = "";
+                            StringBuilder messageBuilder = new StringBuilder();
 
                             for (long userID : this.getUserIDs()) {
 
                                 if (sender.getId() != userID) {
                                     String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
                                     if (username != null) {
-                                        message += "@" + username + " ";
+                                        messageBuilder.append("@").append(username).append(" ");
                                     }
                                 }
                             }
 
+                            String message = messageBuilder.toString();
+                            
                             if (message.isEmpty()) {
                                 message = "There is nobody to tag!";
                             }
@@ -338,14 +340,14 @@ public class Group implements Listener {
 
                 case "tags": {
 
-                    String message = "";
+                    StringBuilder message = new StringBuilder();
 
                     for(Tag tag : this.getTags().values()) {
 
-                        message += tag.getTag() + "\t - \t" + tag.getUsers().size() + " Users\n";
+                        message.append(tag.getTag()).append("\t - \t").append(tag.getUsers().size()).append(" Users\n");
                     }
 
-                    event.getChat().sendMessage(SendableTextMessage.builder().message(message).replyTo(event.getMessage()).build());
+                    event.getChat().sendMessage(SendableTextMessage.builder().message(message.toString()).replyTo(event.getMessage()).build());
                     break;
                 }
 
@@ -359,9 +361,9 @@ public class Group implements Listener {
 
                         if(tag != null) {
 
-                            String message = "Tag Name: " + tag.getTag() + "\n";
-                            message += "Total Users: " + tag.getUsers().size() + "\n";
-                            message += "User List: \n";
+                            StringBuilder message = new StringBuilder().append("Tag Name: ").append(tag.getTag()).append("\n");
+                            message.append("Total Users: ").append(tag.getUsers().size()).append("\n");
+                            message.append("User List: \n");
 
                             for(Long userID : tag.getUsers()) {
 
@@ -369,11 +371,11 @@ public class Group implements Listener {
 
                                 if(username != null) {
 
-                                    message += "  - " + username + "\n";
+                                    message.append("  - ").append(username).append("\n");
                                 }
                             }
 
-                            event.getChat().sendMessage(SendableTextMessage.builder().message(message).replyTo(event.getMessage()).build());
+                            event.getChat().sendMessage(SendableTextMessage.builder().message(message.toString()).replyTo(event.getMessage()).build());
                             return;
                         } else {
 
