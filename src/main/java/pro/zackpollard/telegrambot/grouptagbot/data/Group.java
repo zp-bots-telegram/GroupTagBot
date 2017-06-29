@@ -5,8 +5,6 @@ import pro.zackpollard.telegrambot.api.TelegramBot;
 import pro.zackpollard.telegrambot.api.chat.ChatMemberStatus;
 import pro.zackpollard.telegrambot.api.chat.ChatType;
 import pro.zackpollard.telegrambot.api.chat.GroupChat;
-import pro.zackpollard.telegrambot.api.chat.message.content.ContentType;
-import pro.zackpollard.telegrambot.api.chat.message.content.TextContent;
 import pro.zackpollard.telegrambot.api.chat.message.content.type.MessageEntity;
 import pro.zackpollard.telegrambot.api.chat.message.content.type.MessageEntityType;
 import pro.zackpollard.telegrambot.api.chat.message.send.ParseMode;
@@ -59,6 +57,11 @@ public class Group implements Listener {
 
     @Override
     public void onTextMessageReceived(TextMessageReceivedEvent event) {
+
+        if(GroupTagBot.DEBUG_MODE) {
+            String userID = event.getMessage().getSender().getUsername() != null ? event.getMessage().getSender().getUsername() : String.valueOf(event.getMessage().getSender().getId());
+            System.out.println("DEBUG: <" + event.getChat().getName() + "> - (" + userID + ") - " + event.getContent().getContent());
+        }
 
         User sender = event.getMessage().getSender();
         if(sender != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
@@ -136,11 +139,6 @@ public class Group implements Listener {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        
-        if(GroupTagBot.DEBUG_MODE && event.getContent().getType() == ContentType.TEXT) {
-            String userID = event.getMessage().getSender().getUsername() != null ? event.getMessage().getSender().getUsername() : String.valueOf(event.getMessage().getSender().getId());
-            System.out.println("DEBUG: <" + event.getChat().getName() + "> - (" + userID + ") - " + ((TextContent) event.getContent()).getContent());
-        }
 
         User sender = event.getMessage().getSender();
 
@@ -166,7 +164,7 @@ public class Group implements Listener {
 
         if(GroupTagBot.DEBUG_MODE) {
             String userID = event.getMessage().getSender().getUsername() != null ? event.getMessage().getSender().getUsername() : String.valueOf(event.getMessage().getSender().getId());
-            System.out.println("DEBUG: <" + event.getChat().getName() + "> - (" + userID + ") - " + (event.getContent()).getContent());
+            System.out.println("DEBUG: <" + event.getChat().getName() + "> - (" + userID + ") - " + event.getContent().getContent());
         }
 
         if(event.getMessage().getSender() != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
