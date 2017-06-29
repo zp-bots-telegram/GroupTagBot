@@ -26,6 +26,8 @@ public class GroupTagBot {
     private static GroupTagBot instance;
 
     private final static Gson gson = new Gson();
+    
+    public static boolean DEBUG_MODE = false;
 
     public static void main(String[] args) {
 
@@ -141,6 +143,11 @@ public class GroupTagBot {
 
                     System.out.println("Usernames cleaned up: " + emptyUsernames);
                     System.out.println("Removed/Left Users cleaned up: " + usersRemoved);
+                    break;
+                }
+                case "toggledebug": {
+                    DEBUG_MODE = !DEBUG_MODE;
+                    System.out.println("Debug mode was " + (DEBUG_MODE ? "enabled" : "disabled") + ".");
                     break;
                 }
                 default: {
