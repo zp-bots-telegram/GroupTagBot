@@ -58,13 +58,13 @@ public class Group implements Listener {
     @Override
     public void onTextMessageReceived(TextMessageReceivedEvent event) {
 
-        if(GroupTagBot.DEBUG_MODE) {
-            String userID = event.getMessage().getSender().getUsername() != null ? event.getMessage().getSender().getUsername() : String.valueOf(event.getMessage().getSender().getId());
-            System.out.println("DEBUG: <" + event.getChat().getName() + "> - (" + userID + ") - " + event.getContent().getContent());
-        }
-
         User sender = event.getMessage().getSender();
         if(sender != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
+
+            if(GroupTagBot.DEBUG_MODE) {
+                String userID = event.getMessage().getSender().getUsername() != null ? event.getMessage().getSender().getUsername() : String.valueOf(event.getMessage().getSender().getId());
+                System.out.println("DEBUG: <" + event.getChat().getName() + "> - (" + userID + ") - " + event.getContent().getContent());
+            }
 
             GroupChat chat = (GroupChat) event.getChat();
 
@@ -164,13 +164,13 @@ public class Group implements Listener {
     @Override
     public void onCommandMessageReceived(CommandMessageReceivedEvent event) {
 
-        if(GroupTagBot.DEBUG_MODE) {
-            String userID = event.getMessage().getSender().getUsername() != null ? event.getMessage().getSender().getUsername() : String.valueOf(event.getMessage().getSender().getId());
-            System.out.println("DEBUG: <" + event.getChat().getName() + "> - (" + userID + ") - " + event.getContent().getContent());
-        }
-
         if(event.getMessage().getSender() != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
 
+            if(GroupTagBot.DEBUG_MODE) {
+                String userID = event.getMessage().getSender().getUsername() != null ? event.getMessage().getSender().getUsername() : String.valueOf(event.getMessage().getSender().getId());
+                System.out.println("DEBUG: <" + event.getChat().getName() + "> - (" + userID + ") - " + event.getContent().getContent());
+            }
+            
             GroupChat chat = (GroupChat) event.getChat();
 
             switch (event.getCommand().toLowerCase()) {
