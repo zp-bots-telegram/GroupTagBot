@@ -120,12 +120,12 @@ public class Group implements Listener {
 
     @Override
     public void onMessageEditReceived(MessageEditReceivedEvent event) {
-
-        System.out.println(event.getMessage().asJson().toString(4));
         
         User sender = event.getMessage().getSender();
 
         if(sender != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
+
+            System.out.println(event.getMessage().asJson().toString(4));
 
             this.getUserIDs().add(sender.getId());
         }
