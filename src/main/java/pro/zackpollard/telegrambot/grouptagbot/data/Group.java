@@ -32,6 +32,7 @@ public class Group implements Listener {
     private final Set<Long> userIDs;
     private final Map<String, Tag> tags;
     private boolean onlyAdmins;
+    private boolean allowBroadcasts;
 
     private final transient Map<String, Tag> aliases;
     private final transient TelegramBot telegramBot;
@@ -51,6 +52,7 @@ public class Group implements Listener {
         this.userIDs = new TreeSet<>();
         this.tags = new HashMap<>();
         this.aliases = new HashMap<>();
+        this.allowBroadcasts = true;
 
         telegramBot.getEventsManager().register(this);
     }
@@ -85,25 +87,7 @@ public class Group implements Listener {
 
                         if(hasPermission(event.getMessage().getSender(), chat, Role.ADMIN)) {
 
-                            StringBuilder messageBuilder = new StringBuilder();
-
-                            for (long userID : this.getUserIDs()) {
-
-                                if (sender.getId() != userID) {
-                                    String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
-                                    if (username != null) {
-                                        messageBuilder.append("@").append(username).append(" ");
-                                    }
-                                }
-                            }
-
-                            String message = messageBuilder.toString();
-                            
-                            if (message.isEmpty()) {
-                                message = "There is nobody to tag!";
-                            }
-
-                            event.getChat().sendMessage(message);
+                            sendTagMessage(this.getUserIDs(), event);
                             return;
                         } else {
 
@@ -116,23 +100,7 @@ public class Group implements Listener {
 
                     if (tag != null) {
 
-                        String message = "";
-
-                        for (long userID : tag.getUsers()) {
-
-                            if (sender.getId() != userID) {
-                                String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
-                                if (username != null) {
-                                    message += "@" + username + " ";
-                                }
-                            }
-                        }
-
-                        if (message.isEmpty()) {
-                            message = "There is nobody to tag!";
-                        }
-
-                        event.getChat().sendMessage(message);
+                        sendTagMessage(tag.getUsers(), event);
                     }
                 }
             }
@@ -153,6 +121,8 @@ public class Group implements Listener {
     @Override
     public void onMessageEditReceived(MessageEditReceivedEvent event) {
 
+        System.out.println(event.getMessage().asJson().toString(4));
+        
         User sender = event.getMessage().getSender();
 
         if(sender != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
@@ -429,6 +399,18 @@ public class Group implements Listener {
 
                     break;
                 }
+                
+                case "togglebroadcasts": {
+                    
+                    if(hasPermission(event.getMessage().getSender(), chat, Role.ADMIN)) {
+                        
+                        allowBroadcasts = !allowBroadcasts;
+                        event.getChat().sendMessage(SendableTextMessage.builder().message("Broadcasts about bot updates and other information have been " + (allowBroadcasts ? "enabled" : "disabled") + ".").replyTo(event.getMessage()).build());
+                    } else {
+                        
+                        event.getChat().sendMessage(SendableTextMessage.builder().message("You do not have permission to use this command, you must be an admin in the chat.").replyTo(event.getMessage()).build());
+                    }
+                }
             }
         }
     }
@@ -470,9 +452,49 @@ public class Group implements Listener {
 
         return userMap;
     }
+    
+    private void sendTagMessage(Set<Long> userIDs, TextMessageReceivedEvent event) {
+        
+        User sender = event.getMessage().getSender();
+
+        boolean messageDeleted = telegramBot.deleteMessage(event.getMessage());
+        
+        StringBuilder messageBuilder = new StringBuilder();
+        
+        if(messageDeleted) {
+            messageBuilder.append(event.getContent().getContent()).append("\n\n");
+        }
+
+        boolean noUsers = true;
+        
+        for (long userID : userIDs) {
+
+            if (sender.getId() != userID) {
+                String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
+                if (username != null) {
+                    noUsers = false;
+                    messageBuilder.append("@").append(username).append(" ");
+                }
+            }
+        }
+
+        if (noUsers) {
+            messageBuilder.append("There is nobody to tag!");
+        }
+        
+        if(messageDeleted) {
+            messageBuilder
+                    .append("\n\n- Sent by ")
+                    .append(sender.getFullName())
+                    .append(" (")
+                    .append(!sender.getUsername().equals("@") ? sender.getUsername() : sender.getId())
+                    .append(")");
+        }
+
+        event.getChat().sendMessage(messageBuilder.toString());
+    }
 
     private enum Role {
-
         NONE,
         FAKE_ADMIN,
         ADMIN

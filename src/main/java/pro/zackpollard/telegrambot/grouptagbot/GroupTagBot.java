@@ -3,6 +3,7 @@ package pro.zackpollard.telegrambot.grouptagbot;
 import com.google.gson.Gson;
 import lombok.Getter;
 import pro.zackpollard.telegrambot.api.TelegramBot;
+import pro.zackpollard.telegrambot.api.chat.Chat;
 import pro.zackpollard.telegrambot.api.chat.ChatMemberStatus;
 import pro.zackpollard.telegrambot.api.chat.GroupChat;
 import pro.zackpollard.telegrambot.grouptagbot.data.Group;
@@ -59,10 +60,14 @@ public class GroupTagBot {
 
         while(running) {
 
-            System.out.print("root@GroupTagBot$ ");
+            System.out.print("\nroot@GroupTagBot$ ");
             String input = scanner.nextLine().trim();
+            int indexOfSpace = input.indexOf(' ');
+            String command = indexOfSpace != -1 ? input.substring(0, indexOfSpace) : input;
+            String fullArgs = indexOfSpace != -1 ? input.substring(indexOfSpace + 1) : "";
+            String[] argsArray = fullArgs.split(" ");
 
-            switch(input) {
+            switch(command) {
 
                 case "exit":
                 case "shutdown": {
@@ -150,10 +155,60 @@ public class GroupTagBot {
                     System.out.println("Debug mode was " + (DEBUG_MODE ? "enabled" : "disabled") + ".");
                     break;
                 }
+                case "testbroadcast":
+                case "broadcast": {
+
+                    int sent = 0;
+                    int enabledGroups = 0;
+                    int disabledGroups = 0;
+                    
+                    for(Group group : manager.getGroupTags().getGroups().values()) {
+                        group.setAllowBroadcasts(true);
+                        if(group.isAllowBroadcasts()) {
+                            ++enabledGroups;
+                        } else {
+                            ++disabledGroups;
+                        }
+                    }
+                    
+                    System.out.println("Groups with broadcasts disabled: " + disabledGroups + "/" + enabledGroups);
+                    
+                    for(Group group : new ArrayList<>(manager.getGroupTags().getGroups().values())) {
+                        
+                        if(group.isAllowBroadcasts()) {
+                            
+                            Chat chat = (GroupChat) telegramBot.getChat(group.getId());
+                            if(command.equals("testbroadcast")) {
+                                chat = telegramBot.getChat(87425504L);
+                            }
+                            chat.sendMessage(fullArgs.replace("\\n", "\n"));
+                            ++sent;
+                        }
+                        
+                        //[#                   ] 1%\r
+                        System.out.print("\r[");
+                        double percentDone = ((double) sent / (double) enabledGroups) * 100;
+
+                        for (int i = 0; i < 100; i += 5) {
+
+                            System.out.print((i < percentDone) ? "#" : " ");
+                        }
+
+                        System.out.print("] " + (int) percentDone + "%");
+
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    
+                    break;
+                }
                 default: {
 
                     int spaceChar = input.indexOf(" ");
-                    System.out.println("-console: " + (spaceChar != -1 ? input.substring(spaceChar) : input) + ": command not found");
+                    System.out.println("-console: " + (spaceChar != -1 ? input.substring(0, spaceChar) : input) + ": command not found");
                     break;
                 }
             }
