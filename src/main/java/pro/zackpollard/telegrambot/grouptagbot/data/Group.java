@@ -491,7 +491,13 @@ public class Group implements Listener {
                     .append(")");
         }
 
-        event.getChat().sendMessage(messageBuilder.toString());
+        SendableTextMessage.SendableTextMessageBuilder sendableMessageBuilder = SendableTextMessage.plain(messageBuilder.toString());
+
+        if(messageDeleted) {
+            sendableMessageBuilder.replyTo(event.getMessage().getRepliedTo());
+        }
+
+        event.getChat().sendMessage(sendableMessageBuilder.build());
     }
 
     private enum Role {
