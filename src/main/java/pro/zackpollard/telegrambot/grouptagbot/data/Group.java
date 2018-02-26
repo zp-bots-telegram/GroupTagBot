@@ -1,7 +1,9 @@
 package pro.zackpollard.telegrambot.grouptagbot.data;
 
 import lombok.Data;
+import lombok.ToString;
 import pro.zackpollard.telegrambot.api.TelegramBot;
+import pro.zackpollard.telegrambot.api.chat.ChatMember;
 import pro.zackpollard.telegrambot.api.chat.ChatMemberStatus;
 import pro.zackpollard.telegrambot.api.chat.ChatType;
 import pro.zackpollard.telegrambot.api.chat.GroupChat;
@@ -9,7 +11,9 @@ import pro.zackpollard.telegrambot.api.chat.message.content.type.MessageEntity;
 import pro.zackpollard.telegrambot.api.chat.message.content.type.MessageEntityType;
 import pro.zackpollard.telegrambot.api.chat.message.send.ParseMode;
 import pro.zackpollard.telegrambot.api.chat.message.send.SendableTextMessage;
+import pro.zackpollard.telegrambot.api.event.Event;
 import pro.zackpollard.telegrambot.api.event.Listener;
+import pro.zackpollard.telegrambot.api.event.chat.ParticipantLeaveGroupChatEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.CommandMessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.MessageEditReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.message.MessageReceivedEvent;
@@ -17,10 +21,7 @@ import pro.zackpollard.telegrambot.api.event.chat.message.TextMessageReceivedEve
 import pro.zackpollard.telegrambot.api.user.User;
 import pro.zackpollard.telegrambot.grouptagbot.GroupTagBot;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * @author Zack Pollard
@@ -70,7 +71,7 @@ public class Group implements Listener {
 
             GroupChat chat = (GroupChat) event.getChat();
 
-            String text = event.getContent().getContent();
+            String text = event.getContent().getContent().toLowerCase();
 
             if (text.startsWith("@")) {
 
@@ -124,8 +125,6 @@ public class Group implements Listener {
         User sender = event.getMessage().getSender();
 
         if(sender != null && (event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
-
-            System.out.println(event.getMessage().asJson().toString(4));
 
             this.getUserIDs().add(sender.getId());
         }
@@ -452,7 +451,30 @@ public class Group implements Listener {
 
         return userMap;
     }
-    
+
+    @Override
+    @Event.Handler(ignoreCancelled = true)
+    public void onParticipantLeaveGroupChat(ParticipantLeaveGroupChatEvent event) {
+
+        if((event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) && Long.valueOf(event.getChat().getId()).equals(this.getId())) {
+
+            System.out.println(event.getParticipant().getId());
+
+            userIDs.remove(event.getParticipant().getId());
+
+            for (Tag tag : tags.values()) {
+
+                for (long userID : new HashSet<>(tag.getUsers())) {
+
+                    if (event.getParticipant().getId() == userID) {
+
+                        tag.getUsers().remove(userID);
+                    }
+                }
+            }
+        }
+    }
+
     private void sendTagMessage(Set<Long> userIDs, TextMessageReceivedEvent event) {
         
         User sender = event.getMessage().getSender();
@@ -471,9 +493,11 @@ public class Group implements Listener {
 
             if (sender.getId() != userID) {
                 String username = instance.getManager().getUsernameCache().getUsernameCache().get(userID);
-                if (username != null) {
-                    noUsers = false;
+                noUsers = false;
+                if (username != null && !username.isEmpty()) {
                     messageBuilder.append("@").append(username).append(" ");
+                } else {
+                    messageBuilder.append("<a href=\"tg://user?id=").append(userID).append("\">").append(userID).append("</a>").append(" ");
                 }
             }
         }
@@ -492,12 +516,56 @@ public class Group implements Listener {
         }
 
         SendableTextMessage.SendableTextMessageBuilder sendableMessageBuilder = SendableTextMessage.plain(messageBuilder.toString());
+        sendableMessageBuilder.parseMode(ParseMode.HTML);
 
         if(messageDeleted) {
             sendableMessageBuilder.replyTo(event.getMessage().getRepliedTo());
         }
 
-        event.getChat().sendMessage(sendableMessageBuilder.build());
+
+
+
+        if(event.getChat().sendMessage(sendableMessageBuilder.build()) == null) {
+            event.getChat().sendMessage("There was an error whilst trying to send this tag. The bot is trying to fix this in the background, another message will be sent when this has completed. If this error persists, please contact @zackpollard");
+            System.out.println("A message failed to send so the bot is checking through for any users that were kicked or left but were not tracked.");
+            new Thread(() -> {
+                Set<Long> groupIds = new HashSet<>(userIDs);
+                for(Tag tag : tags.values()) {
+                    groupIds.addAll(tag.getUsers());
+                }
+                Set<Long> idsToScan = new HashSet<>();
+                for(long userId : groupIds) {
+                    String username = instance.getManager().getUsernameCache().getUsernameCache().get(userId);
+                    if(username == null || username.isEmpty()) {
+                        idsToScan.add(userId);
+                    }
+                }
+                for(long userId : idsToScan) {
+                    System.out.println("Scanning user with ID " + userId);
+                    ChatMember chatMember = event.getChat().getChatMember(userId);
+                    ChatMemberStatus userStatus =  chatMember != null ? chatMember.getStatus() : null;
+                    System.out.println("User with ID " + userId + " has the status " + userStatus);
+                    if(chatMember == null || userStatus.equals(ChatMemberStatus.KICKED) || userStatus.equals(ChatMemberStatus.LEFT)) {
+                        userIDs.remove(userId);
+                        System.out.println("User with ID " + userId + " was found to have left the group and has been removed from the groups user list.");
+                        for(Tag tag : tags.values()) {
+                            if(tag.getUsers().contains(userId)) {
+                                  tag.getUsers().remove(userId);
+                                  userIDs.remove(userId);
+                                  System.out.println("User with ID " + userId + " was found to have left the group and has been removed from the " + tag.getTag() + " tag.");
+                            }
+                        }
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                System.out.println("User checks have been completed.");
+                event.getChat().sendMessage("The bot has finished fixing the issues, please try the tag again, if it still fails, contact @zackpollard to investigate the issue more.");
+            }).start();
+        }
     }
 
     private enum Role {
