@@ -10,7 +10,7 @@ import java.util.Set;
  * @author Zack Pollard
  */
 @Data
-public class Tag {
+public class Tag implements Comparable<Tag> {
 
     private final String tag;
     private final Set<Long> users;
@@ -20,4 +20,9 @@ public class Tag {
         this.tag = tag;
         this.users = new HashSet<>();
     }
+
+  @Override
+  public int compareTo(Tag tag) {
+    return this.tag.compareTo(tag.tag);
+  }
 }
