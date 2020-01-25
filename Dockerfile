@@ -1,4 +1,4 @@
-FROM java:11-alpine
+FROM java:8-alpine
 MAINTAINER Zack Pollard <zackpollard@ymail.com>
 
 VOLUME /java/data/
