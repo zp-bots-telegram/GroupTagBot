@@ -311,7 +311,8 @@ public class Group implements Listener {
 
                     StringBuilder message = new StringBuilder();
 
-                    List<Tag> tags = Collections.sort(this.getTags().values());
+                    List<Tag> tags = new ArrayList<Tag>(this.getTags().values());
+                    Collections.sort(tags);
 
                     for(Tag tag : tags) {
 
