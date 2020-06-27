@@ -35,8 +35,10 @@ public class GroupTagListener implements Listener {
             manager.getUsernameCache().updateUsername(sender.getId(), sender.getUsername());
         }
 
-        instance.getManager().saveUsernameCache();
-        instance.getManager().saveTags();
+        if(event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) {
+
+            manager.getGroupTags().getGroups().putIfAbsent(Long.valueOf(event.getChat().getId()), new Group(Long.parseLong(event.getChat().getId())));
+        }
     }
 
     @Override
@@ -59,7 +61,7 @@ public class GroupTagListener implements Listener {
 
             if(event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) {
 
-                manager.getGroupTags().getGroups().putIfAbsent(Long.valueOf(event.getChat().getId()), new Group(Long.valueOf(event.getChat().getId())));
+                manager.getGroupTags().getGroups().putIfAbsent(Long.valueOf(event.getChat().getId()), new Group(Long.parseLong(event.getChat().getId())));
             }
         } else {
 

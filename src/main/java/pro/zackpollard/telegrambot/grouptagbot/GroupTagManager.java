@@ -9,6 +9,9 @@ import pro.zackpollard.telegrambot.grouptagbot.data.UsernameCache;
 import pro.zackpollard.telegrambot.grouptagbot.utils.Utils;
 
 import java.io.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Zack Pollard
@@ -25,6 +28,8 @@ public class GroupTagManager {
     private GroupTags groupTags;
     private UsernameCache usernameCache;
 
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
     public GroupTagManager() {
 
         this.instance = GroupTagBot.getInstance();
@@ -33,6 +38,14 @@ public class GroupTagManager {
         this.initData();
 
         System.out.println(usernameCache == null);
+
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                saveUsernameCache();
+                saveTags();
+            }
+        }, 5, 5, TimeUnit.MINUTES);
     }
 
     private void initData() {
