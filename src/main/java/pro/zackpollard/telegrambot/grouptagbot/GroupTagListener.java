@@ -9,6 +9,8 @@ import pro.zackpollard.telegrambot.api.event.chat.message.MessageReceivedEvent;
 import pro.zackpollard.telegrambot.api.user.User;
 import pro.zackpollard.telegrambot.grouptagbot.data.Group;
 
+import java.util.Map;
+
 /**
  * @author Zack Pollard
  */
@@ -35,9 +37,17 @@ public class GroupTagListener implements Listener {
             manager.getUsernameCache().updateUsername(sender.getId(), sender.getUsername());
         }
 
-        if(event.getChat().getType().equals(ChatType.GROUP) || event.getChat().getType().equals(ChatType.SUPERGROUP)) {
+        ChatType chatType = event.getChat().getType();
 
-            manager.getGroupTags().getGroups().putIfAbsent(Long.valueOf(event.getChat().getId()), new Group(Long.parseLong(event.getChat().getId())));
+        if(chatType.equals(ChatType.GROUP) || chatType.equals(ChatType.SUPERGROUP)) {
+
+            long chatId = Long.parseLong(event.getChat().getId());
+            Map<Long, Group> groups = manager.getGroupTags().getGroups();
+
+            if(groups.get(chatId) == null) {
+                Group group = new Group(chatId);
+                groups.put(chatId, group);
+            }
         }
     }
 
