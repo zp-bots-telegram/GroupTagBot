@@ -42,8 +42,13 @@ public class GroupTagManager {
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                saveUsernameCache();
-                saveTags();
+                try {
+                    saveUsernameCache();
+                    saveTags();
+                } catch(Throwable t) {
+                    t.printStackTrace();
+                    System.err.println("Catching unexpected error...");
+                }
             }
         }, 5, 5, TimeUnit.MINUTES);
     }
