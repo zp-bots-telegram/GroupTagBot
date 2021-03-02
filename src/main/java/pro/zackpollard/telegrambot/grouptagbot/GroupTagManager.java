@@ -48,6 +48,16 @@ public class GroupTagManager {
                 } catch(Throwable t) {
                     t.printStackTrace();
                     System.err.println("Catching unexpected error...");
+                    try {
+                        telegramBot.getChat(87425504).sendMessage(t.getMessage());
+                        StringWriter sw = new StringWriter();
+                        PrintWriter pw = new PrintWriter(sw);
+                        t.printStackTrace(pw);
+                        telegramBot.getChat(87425504).sendMessage(pw.toString());
+                    } catch (Throwable t2) {
+                        t2.printStackTrace();
+                        System.err.println("Exceptionception...");
+                    }
                 }
             }
         }, 5, 5, TimeUnit.MINUTES);

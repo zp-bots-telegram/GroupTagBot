@@ -32,9 +32,6 @@ public class Utils {
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("The file could not be written to as an error occurred. Please check the directories read/write permissions and contact the developer!");
-        } catch (Throwable t) {
-            t.printStackTrace();
-            System.err.println("Unexpected error thrown, has been caught to stop the scheduler from exiting unexpectedly...");
         }
 
         return false;
